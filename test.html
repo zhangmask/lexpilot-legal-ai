@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexPilot AI - 测试页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">LexPilot AI - 测试页面</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">基础功能测试</h2>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-medium text-gray-700">✅ Vite 服务器运行</h3>
+                    <p class="text-sm text-gray-600">如果您能看到这个页面，说明 Vite 服务器正常运行</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">✅ Tailwind CSS 加载</h3>
+                    <p class="text-sm text-gray-600">页面样式正常显示，Tailwind CSS 通过 CDN 正常加载</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">✅ JavaScript 执行</h3>
+                    <p class="text-sm text-gray-600" id="jsTest">JavaScript 未执行</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">页面导航测试</h2>
+            <div class="space-x-4">
+                <a href="/" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 inline-block">
+                    首页 (index.html)
+                </a>
+                <a href="/chat.html" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 inline-block">
+                    聊天页面 (chat.html)
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">本地存储测试</h2>
+            <button id="testStorage" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                测试 localStorage
+            </button>
+            <div id="storageResult" class="mt-4 p-4 bg-gray-50 rounded">
+                点击按钮测试本地存储功能...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试 JavaScript 执行
+        document.getElementById('jsTest').textContent = '✅ JavaScript 正常执行';
+        document.getElementById('jsTest').className = 'text-sm text-green-600';
+
+        // 测试本地存储
+        document.getElementById('testStorage').addEventListener('click', () => {
+            const resultDiv = document.getElementById('storageResult');
+            
+            try {
+                // 测试写入
+                localStorage.setItem('test', 'LexPilot AI Test');
+                
+                // 测试读取
+                const value = localStorage.getItem('test');
+                
+                if (value === 'LexPilot AI Test') {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600 font-semibold">✅ localStorage 功能正常</div>
+                        <div class="text-sm mt-2">成功写入和读取测试数据</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="text-red-600 font-semibold">❌ localStorage 读取失败</div>
+                    `;
+                }
+                
+                // 清理测试数据
+                localStorage.removeItem('test');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="text-red-600 font-semibold">❌ localStorage 不可用</div>
+                    <div class="text-sm mt-2">错误: ${error.message}</div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

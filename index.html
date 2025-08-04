@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智基灵-云法智擎 | LexPilot AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glow-logo {
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+            animation: pulse-glow 3s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.8)); }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Language Toggle -->
+    <button id="langToggle" class="absolute top-6 right-6 p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 group">
+        <svg class="w-6 h-6 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+        </svg>
+    </button>
+
+    <!-- Background Effects -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 text-center max-w-4xl mx-auto px-6">
+        <!-- Logo -->
+        <div class="mb-8">
+            <svg class="glow-logo w-24 h-24 mx-auto mb-6" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                <path d="M30 35h40M35 45h30M25 55h50M30 65h40" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="25" r="3" fill="url(#gradient)"/>
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6"/>
+                        <stop offset="100%" style="stop-color:#6366f1"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h1 id="mainTitle" class="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+            智基灵-云法智擎
+        </h1>
+        
+        <!-- Subtitle -->
+        <p id="subtitle" class="text-xl md:text-2xl text-slate-300 mb-12 font-light">
+            法律问答 · 办事流程 · 一问即答
+        </p>
+
+        <!-- CTA Button -->
+        <button id="startBtn" class="group relative px-12 py-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-semibold text-lg rounded-full hover:from-sky-400 hover:to-indigo-500 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25">
+            <span id="startBtnText">立即体验</span>
+            <svg class="inline-block ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // 内联脚本避免模块加载问题
+        const dict = {
+            zh: {
+                mainTitle: "智基灵-云法智擎",
+                subtitle: "法律问答 · 办事流程 · 一问即答",
+                startBtnText: "立即体验"
+            },
+            en: {
+                mainTitle: "LexPilot AI",
+                subtitle: "Legal Q&A · Process Guide · Instant Answers",
+                startBtnText: "Start Now"
+            }
+        };
+
+        function getCurrentLang() {
+            return localStorage.getItem("lang") || "zh";
+        }
+
+        function setCurrentLang(lang) {
+            localStorage.setItem("lang", lang);
+            document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+        }
+
+        function updateTexts(lang) {
+            const texts = dict[lang];
+            Object.keys(texts).forEach((key) => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = texts[key];
+                }
+            });
+        }
+
+        // 初始化
+        const currentLang = getCurrentLang();
+        setCurrentLang(currentLang);
+        updateTexts(currentLang);
+
+        // 语言切换
+        document.getElementById("langToggle").addEventListener("click", () => {
+            const newLang = getCurrentLang() === "zh" ? "en" : "zh";
+            setCurrentLang(newLang);
+            updateTexts(newLang);
+        });
+
+        // 开始按钮
+        document.getElementById("startBtn").addEventListener("click", () => {
+            window.location.href = "/chat.html";
+        });
+    </script>
+</body>
+</html>

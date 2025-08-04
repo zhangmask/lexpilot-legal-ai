@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智基灵-云法智擎 | LexPilot AI - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .message-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="gradient-bg h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <div class="w-80 bg-slate-800/50 backdrop-blur-sm border-r border-slate-700/50 flex flex-col">
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-700/50">
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="sidebarTitle" class="text-white font-semibold text-lg">会话历史</h2>
+                <button id="langToggle" class="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 transition-colors">
+                    <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="newChatBtn" class="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-lg hover:from-sky-400 hover:to-indigo-500 transition-all duration-300 font-medium">
+                <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span id="newChatText">新建对话</span>
+            </button>
+        </div>
+
+        <!-- Session List -->
+        <div class="flex-1 overflow-y-auto scrollbar-hide p-4">
+            <div id="sessionList" class="space-y-2">
+                <!-- Sessions will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="flex-1 flex flex-col">
+        <!-- Chat Header -->
+        <div class="p-6 border-b border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 id="chatTitle" class="text-2xl font-bold text-white">智基灵-云法智擎</h1>
+                    <p id="chatSubtitle" class="text-slate-400 mt-1">您的专业法律助手</p>
+                </div>
+                <a href="/" class="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 transition-colors text-slate-300 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="messagesContainer" class="flex-1 overflow-y-auto scrollbar-hide p-6 space-y-4">
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="text-center py-12">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                </div>
+                <h3 id="welcomeTitle" class="text-xl font-semibold text-white mb-2">欢迎使用智基灵-云法智擎</h3>
+                <p id="welcomeDesc" class="text-slate-400">请输入您的法律问题或办事流程咨询，我将为您提供专业解答</p>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
+            <div class="flex items-end space-x-4">
+                <div class="flex-1 relative">
+                    <textarea 
+                        id="messageInput" 
+                        rows="1" 
+                        placeholder="请输入法律或办事问题…"
+                        class="w-full p-4 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-300"
+                        style="max-height: 120px;"
+                    ></textarea>
+                </div>
+                <button 
+                    id="sendBtn" 
+                    class="p-4 bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-xl hover:from-sky-400 hover:to-indigo-500 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 内联所有JavaScript代码避免模块问题
+        const dict = {
+            zh: {
+                sidebarTitle: "会话历史",
+                newChatText: "新建对话",
+                chatTitle: "智基灵-云法智擎",
+                chatSubtitle: "您的专业法律助手",
+                welcomeTitle: "欢迎使用智基灵-云法智擎",
+                welcomeDesc: "请输入您的法律问题或办事流程咨询，我将为您提供专业解答",
+                inputPlaceholder: "请输入法律或办事问题…",
+                loading: "正在思考中...",
+                error: "抱歉，出现了一些问题，请稍后重试",
+                newSession: "新对话"
+            },
+            en: {
+                sidebarTitle: "Chat History",
+                newChatText: "New Chat",
+                chatTitle: "LexPilot AI",
+                chatSubtitle: "Your Professional Legal Assistant",
+                welcomeTitle: "Welcome to LexPilot AI",
+                welcomeDesc: "Please enter your legal questions or process inquiries, and I will provide professional answers",
+                inputPlaceholder: "Type your legal question…",
+                loading: "Thinking...",
+                error: "Sorry, something went wrong. Please try again later",
+                newSession: "New Chat"
+            }
+        };
+
+        function getCurrentLang() {
+            return localStorage.getItem("lang") || "zh";
+        }
+
+        function setCurrentLang(lang) {
+            localStorage.setItem("lang", lang);
+            document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+        }
+
+        function updateTexts(lang) {
+            const texts = dict[lang];
+            Object.keys(texts).forEach((key) => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+                        element.placeholder = texts[key];
+                    } else {
+                        element.textContent = texts[key];
+                    }
+                }
+            });
+        }
+
+        // API配置
+        const API_CONFIG = {
+            baseURL: "https://xingchen-api.xf-yun.com/workflow/v1/chat/completions",
+            apiKey: "49e7eacaf518a39697317a21692a0cde",
+            apiSecret: "NzA3YWQ1YjczNjFmZDgzMmMwOTk4Yjhj",
+            flowId: "7351608093474975746"
+        };
+
+        class ChatApp {
+            constructor() {
+                this.currentSessionId = null;
+                this.sessions = this.loadSessions();
+                this.isLoading = false;
+                this.init();
+            }
+
+            init() {
+                const currentLang = getCurrentLang();
+                setCurrentLang(currentLang);
+                updateTexts(currentLang);
+                this.setupEventListeners();
+                this.handleInitialLoad();
+                this.renderSessions();
+            }
+
+            setupEventListeners() {
+                document.getElementById("langToggle").addEventListener("click", () => {
+                    const newLang = getCurrentLang() === "zh" ? "en" : "zh";
+                    setCurrentLang(newLang);
+                    updateTexts(newLang);
+                });
+
+                document.getElementById("newChatBtn").addEventListener("click", () => {
+                    this.createNewSession();
+                });
+
+                document.getElementById("sendBtn").addEventListener("click", () => {
+                    this.sendMessage();
+                });
+
+                const messageInput = document.getElementById("messageInput");
+                messageInput.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                messageInput.addEventListener("input", () => {
+                    this.autoResizeTextarea(messageInput);
+                });
+            }
+
+            autoResizeTextarea(textarea) {
+                textarea.style.height = "auto";
+                const maxHeight = 120;
+                const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+                textarea.style.height = newHeight + "px";
+            }
+
+            handleInitialLoad() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get("id");
+
+                if (sessionId && this.sessions.find(s => s.id === sessionId)) {
+                    this.loadSession(sessionId);
+                } else {
+                    this.createNewSession();
+                }
+            }
+
+            createNewSession() {
+                const sessionId = "session_" + Date.now();
+                const newSession = {
+                    id: sessionId,
+                    title: getCurrentLang() === "zh" ? "新对话" : "New Chat",
+                    messages: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                this.sessions.unshift(newSession);
+                this.saveSessions();
+                this.loadSession(sessionId);
+                this.renderSessions();
+
+                window.history.pushState({}, "", `/chat.html?id=${sessionId}`);
+            }
+
+            loadSession(sessionId) {
+                this.currentSessionId = sessionId;
+                const session = this.sessions.find(s => s.id === sessionId);
+
+                if (session) {
+                    this.renderMessages(session.messages);
+                    this.highlightActiveSession(sessionId);
+                }
+            }
+
+            async sendMessage() {
+                if (this.isLoading) return;
+
+                const messageInput = document.getElementById("messageInput");
+                const message = messageInput.value.trim();
+
+                if (!message) return;
+
+                messageInput.value = "";
+                messageInput.style.height = "auto";
+
+                this.addMessage("user", message);
+                this.setLoading(true);
+
+                try {
+                    await this.callAPI(message);
+                } catch (error) {
+                    console.error("API Error:", error);
+                    const errorMsg = getCurrentLang() === "zh" 
+                        ? "抱歉，出现了一些问题，请稍后重试" 
+                        : "Sorry, something went wrong. Please try again later";
+                    this.addMessage("assistant", errorMsg);
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            async callAPI(message) {
+                // 模拟API响应
+                const responses = {
+                    "你好": "您好！我是智基灵-云法智擎，您的专业法律助手。请问有什么法律问题需要咨询吗？",
+                    "hello": "Hello! I'm LexPilot AI, your professional legal assistant. How can I help you today?",
+                    "法律": "我可以为您提供各种法律问题的咨询，包括但不限于：合同纠纷、劳动法、婚姻法、房产法等。请具体描述您的问题。",
+                    "合同": "关于合同问题，我可以帮您分析合同条款、解释法律责任、提供纠纷解决建议等。请详细说明您的合同相关问题。"
+                };
+
+                const response = responses[message.toLowerCase()] || 
+                    (getCurrentLang() === "zh" 
+                        ? `关于"${message}"的问题，我建议您咨询专业律师获得更准确的法律建议。同时，您可以查阅相关法律条文或寻求法律援助。`
+                        : `Regarding "${message}", I recommend consulting with a professional lawyer for more accurate legal advice. You can also refer to relevant legal provisions or seek legal aid.`);
+
+                // 模拟打字效果
+                await this.simulateTyping(response);
+            }
+
+            async simulateTyping(text) {
+                const messageElement = this.addMessage("assistant", "", true);
+                let currentText = "";
+
+                for (let i = 0; i < text.length; i++) {
+                    currentText += text[i];
+                    messageElement.textContent = currentText;
+                    await new Promise(resolve => setTimeout(resolve, 30));
+                }
+
+                this.saveMessageToSession("assistant", text);
+            }
+
+            addMessage(role, content, isStreaming = false) {
+                const messagesContainer = document.getElementById("messagesContainer");
+
+                const welcomeMessage = document.getElementById("welcomeMessage");
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = "none";
+                }
+
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `message-animation flex ${role === "user" ? "justify-end" : "justify-start"} mb-4`;
+
+                const messageContent = document.createElement("div");
+                messageContent.className = `max-w-3xl px-4 py-3 rounded-xl ${
+                    role === "user"
+                        ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white ml-12"
+                        : "bg-slate-200 text-slate-800 mr-12"
+                }`;
+
+                const avatar = document.createElement("div");
+                avatar.className = `w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    role === "user" ? "bg-sky-600 ml-3 order-2" : "bg-slate-400 mr-3"
+                }`;
+
+                if (role === "user") {
+                    avatar.textContent = "U";
+                    avatar.className += " text-white text-sm font-semibold";
+                } else {
+                    avatar.innerHTML = `
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    `;
+                }
+
+                messageContent.textContent = content;
+
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                messagesContainer.appendChild(messageDiv);
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                if (!isStreaming) {
+                    this.saveMessageToSession(role, content);
+                    this.updateSessionTitle(content, role);
+                }
+
+                return messageContent;
+            }
+
+            saveMessageToSession(role, content) {
+                const session = this.sessions.find(s => s.id === this.currentSessionId);
+                if (session) {
+                    session.messages.push({ role, content, timestamp: new Date().toISOString() });
+                    this.saveSessions();
+                }
+            }
+
+            updateSessionTitle(content, role) {
+                if (role === "user") {
+                    const session = this.sessions.find(s => s.id === this.currentSessionId);
+                    if (session && session.messages.length <= 2) {
+                        session.title = content.substring(0, 20) + (content.length > 20 ? "..." : "");
+                        this.saveSessions();
+                        this.renderSessions();
+                    }
+                }
+            }
+
+            renderMessages(messages) {
+                const messagesContainer = document.getElementById("messagesContainer");
+                const existingMessages = messagesContainer.querySelectorAll(".message-animation");
+                existingMessages.forEach(msg => msg.remove());
+
+                if (messages.length === 0) {
+                    document.getElementById("welcomeMessage").style.display = "block";
+                } else {
+                    document.getElementById("welcomeMessage").style.display = "none";
+                    messages.forEach(msg => {
+                        this.addMessage(msg.role, msg.content);
+                    });
+                }
+            }
+
+            renderSessions() {
+                const sessionList = document.getElementById("sessionList");
+                sessionList.innerHTML = "";
+
+                this.sessions.forEach(session => {
+                    const sessionDiv = document.createElement("div");
+                    sessionDiv.className = `p-3 rounded-lg cursor-pointer transition-colors hover:bg-slate-700/50 ${
+                        session.id === this.currentSessionId ? "bg-slate-700/70" : ""
+                    }`;
+                    sessionDiv.onclick = () => this.switchSession(session.id);
+
+                    const title = document.createElement("div");
+                    title.className = "text-white text-sm font-medium truncate";
+                    title.textContent = session.title;
+
+                    const date = document.createElement("div");
+                    date.className = "text-slate-400 text-xs mt-1";
+                    date.textContent = new Date(session.createdAt).toLocaleDateString();
+
+                    sessionDiv.appendChild(title);
+                    sessionDiv.appendChild(date);
+                    sessionList.appendChild(sessionDiv);
+                });
+            }
+
+            switchSession(sessionId) {
+                this.loadSession(sessionId);
+                window.history.pushState({}, "", `/chat.html?id=${sessionId}`);
+            }
+
+            highlightActiveSession(sessionId) {
+                const sessionElements = document.querySelectorAll("#sessionList > div");
+                sessionElements.forEach((el, index) => {
+                    if (this.sessions[index].id === sessionId) {
+                        el.className = el.className.replace("bg-slate-700/70", "").trim() + " bg-slate-700/70";
+                    } else {
+                        el.className = el.className.replace("bg-slate-700/70", "").trim();
+                    }
+                });
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                const sendBtn = document.getElementById("sendBtn");
+                const messageInput = document.getElementById("messageInput");
+
+                sendBtn.disabled = loading;
+                messageInput.disabled = loading;
+
+                if (loading) {
+                    this.showLoadingIndicator();
+                } else {
+                    this.hideLoadingIndicator();
+                }
+            }
+
+            showLoadingIndicator() {
+                const messagesContainer = document.getElementById("messagesContainer");
+
+                const loadingDiv = document.createElement("div");
+                loadingDiv.id = "loadingIndicator";
+                loadingDiv.className = "flex justify-start mb-4";
+
+                const avatar = document.createElement("div");
+                avatar.className = "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-400 mr-3";
+                avatar.innerHTML = `
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                `;
+
+                const loadingContent = document.createElement("div");
+                loadingContent.className = "max-w-3xl px-4 py-3 rounded-xl bg-slate-200 text-slate-800 mr-12";
+
+                const dots = document.createElement("div");
+                dots.className = "flex space-x-1";
+                dots.innerHTML = `
+                    <div class="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                `;
+
+                loadingContent.appendChild(dots);
+                loadingDiv.appendChild(avatar);
+                loadingDiv.appendChild(loadingContent);
+                messagesContainer.appendChild(loadingDiv);
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            hideLoadingIndicator() {
+                const loadingIndicator = document.getElementById("loadingIndicator");
+                if (loadingIndicator) {
+                    loadingIndicator.remove();
+                }
+            }
+
+            loadSessions() {
+                const saved = localStorage.getItem("chatSessions");
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveSessions() {
+                if (this.sessions.length > 20) {
+                    this.sessions = this.sessions.slice(0, 20);
+                }
+                localStorage.setItem("chatSessions", JSON.stringify(this.sessions));
+            }
+        }
+
+        // 初始化应用
+        new ChatApp();
+    </script>
+</body>
+</html>
